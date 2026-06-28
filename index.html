@@ -725,15 +725,25 @@ function startQuiz() {
   if (!nome || !cognome || !mail) { err.style.display = 'block'; return; }
   if (!gdpr) { gdprErr.style.display = 'block'; return; }
 
-  currentUser = { nome, cognome, mail, day: selectedDay, ts: Date.now() };
+  // Controlla se ha già partecipato con questa mail per questo giorno
+  getResults().then(results => {
+    const already = results.find(r => r.mail.toLowerCase() === mail.toLowerCase() && r.day === selectedDay);
+    if (already) {
+      err.textContent = 'Hai già partecipato al quiz di questa sera con questa email!';
+      err.style.display = 'block';
+      return;
+    }
 
-  if (selectedDay === 'sabato') {
-    initTajarin();
-    goTo('screen-tajarin');
-  } else {
-    initBagna();
-    goTo('screen-bagna');
-  }
+    currentUser = { nome, cognome, mail, day: selectedDay, ts: Date.now() };
+
+    if (selectedDay === 'sabato') {
+      initTajarin();
+      goTo('screen-tajarin');
+    } else {
+      initBagna();
+      goTo('screen-bagna');
+    }
+  });
 }
 
 // ═══════════════════════════════════════════
