@@ -462,7 +462,45 @@
     <span id="reg-game-text"></span>
   </div>
 
+  <div class="card" style="font-size:12px; line-height:1.6; color:var(--muted); max-height:220px; overflow-y:auto;">
+    <h3 style="margin-bottom:10px;">Informativa sul Trattamento dei Dati Personali</h3>
+    <p style="margin-bottom:6px;font-size:11px;color:var(--muted);">Ai sensi dell'art. 13 del Regolamento UE 2016/679 - GDPR</p>
+
+    <p style="margin-bottom:10px;">L'Associazione di Promozione Sociale (APS) Proloco di Villafranca D'Asti (di seguito denominata "Titolare"), in linea con la normativa vigente in materia di protezione dei dati personali, informa gli utenti (di seguito denominati "Interessati") circa le modalità, le finalità e l'ambito di trattamento dei dati raccolti per la partecipazione al quiz.</p>
+
+    <p style="margin-bottom:4px;font-weight:600;color:var(--brown);">1. Titolare del Trattamento</p>
+    <p style="margin-bottom:10px;">Il Titolare del trattamento è l'APS Proloco di Villafranca D'Asti, con sede legale in Villafranca d'Asti (AT), contattabile per qualsiasi questione inerente alla privacy all'indirizzo email dedicato: <strong>prolocovillafrancadasti@gmail.com</strong>.</p>
+
+    <p style="margin-bottom:4px;font-weight:600;color:var(--brown);">2. Categorie di Dati Oggetto di Trattamento</p>
+    <p style="margin-bottom:10px;">Il trattamento ha per oggetto esclusivamente dati personali comuni e non particolari (identificativi e di contatto), nello specifico: Nome ed Indirizzo Email forniti volontariamente dall'utente in fase di registrazione al gioco online.</p>
+
+    <p style="margin-bottom:4px;font-weight:600;color:var(--brown);">3. Finalità del Trattamento</p>
+    <p style="margin-bottom:10px;">I dati raccolti saranno trattati unicamente ed esclusivamente per consentire e gestire l'interazione e la corretta partecipazione dell'utente al quiz culturale informativo, inteso come gioco ludico ad accesso completamente gratuito, incluse le operazioni di elaborazione del punteggio finale e l'invio telematico del risultato.</p>
+
+    <p style="margin-bottom:4px;font-weight:600;color:var(--brown);">4. Base Giuridica del Trattamento</p>
+    <p style="margin-bottom:10px;">Il trattamento dei dati si fonda sul consenso esplicito, libero e inequivocabile dell'Interessato (ai sensi dell'art. 6, par. 1, lett. a del GDPR), manifestato mediante azione positiva e volontaria tramite la spunta dell'apposita casella (checkbox) in calce al modulo di iscrizione.</p>
+
+    <p style="margin-bottom:4px;font-weight:600;color:var(--brown);">5. Modalità del Trattamento e Sicurezza dei Dati</p>
+    <p style="margin-bottom:10px;">Il trattamento è eseguito sia attraverso strumenti cartacei sia mediante supporti informatici e digitali automatizzati. Il Titolare garantisce l'adozione di misure tecniche e organizzative adeguate a garantire un livello di sicurezza commisurato al rischio (ai sensi dell'art. 32 GDPR), volte a prevenire la perdita dei dati, usi illeciti o non corretti, accessi non autorizzati o la diffusione accidentale. I dati non saranno comunicati a terzi né saranno oggetto di diffusione o di trasferimento verso paesi extra-UE.</p>
+
+    <p style="margin-bottom:4px;font-weight:600;color:var(--brown);">6. Periodo di Conservazione dei Dati</p>
+    <p style="margin-bottom:10px;">In conformità al principio di limitazione della conservazione (art. 5, par. 1, lett. e del GDPR), tutti i dati personali raccolti saranno memorizzati per il tempo strettamente necessario all'esecuzione del gioco e saranno definitivamente e permanentemente cancellati entro 10 giorni dalla conclusione del quiz.</p>
+
+    <p style="margin-bottom:4px;font-weight:600;color:var(--brown);">7. Diritti dell'Interessato</p>
+    <p style="margin-bottom:10px;">In ogni momento, l'utente può esercitare i diritti previsti dagli artt. 15 e seguenti del GDPR, tra cui il diritto di accesso ai propri dati, la rettifica, la portabilità o la limitazione del trattamento.<br><br>
+    In particolare, l'utente ha il diritto di revocare il consenso e richiedere la cancellazione immediata dei propri dati prima della scadenza naturale dei 10 giorni. Tali diritti possono essere esercitati inviando una comunicazione formale via email all'indirizzo: <strong>prolocovillafrancadasti@gmail.com</strong>.<br><br>
+    L'Interessato ha inoltre il diritto di proporre reclamo all'Autorità Garante per la Protezione dei Dati Personali (<a href="https://www.garanteprivacy.it" style="color:var(--gold);">www.garanteprivacy.it</a>) qualora ritenga che il trattamento violi le norme vigenti.</p>
+  </div>
+
+  <div style="display:flex; align-items:flex-start; gap:12px; margin:16px 0 8px; padding:14px; background:rgba(201,150,42,0.08); border-radius:10px; border:1.5px solid rgba(201,150,42,0.3);">
+    <input type="checkbox" id="gdpr-check" style="width:20px;height:20px;margin-top:2px;flex-shrink:0;accent-color:var(--gold);cursor:pointer;">
+    <label for="gdpr-check" style="font-size:13px;line-height:1.5;color:var(--brown);cursor:pointer;">
+      Ho letto e accetto l'informativa sul trattamento dei dati personali ai sensi del GDPR. Presto il mio consenso al trattamento dei dati forniti per la partecipazione al quiz. *
+    </label>
+  </div>
+
   <div id="reg-error" class="error-msg">Compila Nome, Cognome e Mail per continuare.</div>
+  <div id="gdpr-error" class="error-msg">Devi accettare l'informativa sulla privacy per continuare.</div>
   <button class="btn btn-primary" onclick="startQuiz()">Inizia il Quiz 🎯</button>
   <button class="btn btn-ghost" onclick="goTo('screen-day')" style="margin-top:10px;">← Indietro</button>
 </div>
@@ -673,12 +711,16 @@ function startQuiz() {
   const nome = document.getElementById('inp-nome').value.trim();
   const cognome = document.getElementById('inp-cognome').value.trim();
   const mail = document.getElementById('inp-mail').value.trim();
+  const gdpr = document.getElementById('gdpr-check').checked;
   const err = document.getElementById('reg-error');
+  const gdprErr = document.getElementById('gdpr-error');
 
-  if (!nome || !cognome || !mail) {
-    err.style.display = 'block'; return;
-  }
   err.style.display = 'none';
+  gdprErr.style.display = 'none';
+
+  if (!nome || !cognome || !mail) { err.style.display = 'block'; return; }
+  if (!gdpr) { gdprErr.style.display = 'block'; return; }
+
   currentUser = { nome, cognome, mail, day: selectedDay, ts: Date.now() };
 
   if (selectedDay === 'sabato') {
