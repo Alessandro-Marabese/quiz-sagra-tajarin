@@ -471,10 +471,7 @@
      SCREEN 2a — QUIZ TAJARIN (multipla)
 ══════════════════════════════════════════════ -->
 <div id="screen-tajarin" class="screen">
-  <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
-    <div class="progress-bar" style="flex:1; margin-bottom:0;"><div class="progress-fill" id="tajarin-progress"></div></div>
-    <div class="timer-circle" id="tajarin-timer" style="width:48px;height:48px;font-size:16px;flex-shrink:0;">60</div>
-  </div>
+  <div class="progress-bar"><div class="progress-fill" id="tajarin-progress"></div></div>
 
   <div class="card">
     <div class="q-counter" id="tajarin-counter"></div>
@@ -489,10 +486,6 @@
      SCREEN 2b — QUIZ BAGNA FREIDA (numerico)
 ══════════════════════════════════════════════ -->
 <div id="screen-bagna" class="screen">
-  <div class="timer-ring">
-    <div class="timer-circle" id="bagna-timer">60</div>
-  </div>
-
   <div class="card">
     <h2>Quanti kg di aglio abbiamo usato?</h2>
     <div class="divider"></div>
@@ -646,7 +639,6 @@ let selectedDay = null;
 let currentUser = {};
 let tajarin = { current: 0, answers: [], correct: 0, startTime: 0 };
 let bagnaTimer = null;
-let bagnaSeconds = 60;
 
 // ═══════════════════════════════════════════
 // NAVIGATION
@@ -702,10 +694,22 @@ function startQuiz() {
 // TAJARIN QUIZ
 // ═══════════════════════════════════════════
 let tajarinTimer = null;
-const TAJARIN_Q_TIME = 60; // secondi per domanda
+const QUIZ_TIMEOUT = 15 * 60 * 1000; // 15 minuti in ms
 
 function initTajarin() {
   tajarin = { current: 0, answers: [], correct: 0, startTime: Date.now(), pendingAnswer: null };
+
+  // Timeout globale 15 minuti
+  clearTimeout(tajarinTimer);
+  tajarinTimer = setTimeout(() => {
+    // Forza chiusura: le domande rimanenti contano come errate
+    while (tajarin.current < TAJARIN_Q.length) {
+      tajarin.answers.push(null);
+      tajarin.current++;
+    }
+    finishTajarin();
+  }, QUIZ_TIMEOUT);
+
   renderTajarinQ();
 }
 
@@ -733,52 +737,6 @@ function renderTajarinQ() {
   tajarin.pendingAnswer = null;
   const btnLabel = (i === total - 1) ? 'Vedi risultato 🏆' : 'Prossima domanda →';
   document.getElementById('btn-tajarin-next').textContent = btnLabel;
-
-  // Avvia timer per domanda
-  startTajarinTimer();
-}
-
-function startTajarinTimer() {
-  clearInterval(tajarinTimer);
-  let secs = TAJARIN_Q_TIME;
-  updateTajarinTimerUI(secs);
-
-  tajarinTimer = setInterval(() => {
-    secs--;
-    updateTajarinTimerUI(secs);
-    if (secs <= 0) {
-      clearInterval(tajarinTimer);
-      // Tempo scaduto: risposta errata, avanza
-      timeoutTajarin();
-    }
-  }, 1000);
-}
-
-function updateTajarinTimerUI(secs) {
-  const el = document.getElementById('tajarin-timer');
-  el.textContent = secs;
-  const deg = (secs / TAJARIN_Q_TIME) * 360;
-  el.style.background = `conic-gradient(var(--gold) ${deg}deg, #E5DDD2 ${deg}deg)`;
-  if (secs <= 15) el.classList.add('urgent'); else el.classList.remove('urgent');
-}
-
-function timeoutTajarin() {
-  // Mostra risposta corretta, nessuna errata evidenziata (non ha risposto)
-  const q = TAJARIN_Q[tajarin.current];
-  const opts = document.querySelectorAll('#tajarin-options .option');
-  opts[q.correct].classList.add('correct');
-  opts.forEach(o => o.style.pointerEvents = 'none');
-  tajarin.answers.push(null); // null = non risposto = errato
-  document.getElementById('btn-tajarin-next').disabled = true;
-
-  setTimeout(() => {
-    tajarin.current++;
-    if (tajarin.current < TAJARIN_Q.length) {
-      renderTajarinQ();
-    } else {
-      finishTajarin();
-    }
-  }, 900);
 }
 
 function selectOption(idx) {
@@ -790,7 +748,6 @@ function selectOption(idx) {
 }
 
 function nextTajarin() {
-  clearInterval(tajarinTimer);
   const i = tajarin.current;
   const q = TAJARIN_Q[i];
   const chosen = tajarin.pendingAnswer;
@@ -799,7 +756,7 @@ function nextTajarin() {
   opts.forEach(o => o.style.pointerEvents = 'none');
   opts[q.correct].classList.add('correct');
   if (chosen !== q.correct) {
-    opts[chosen].classList.add('wrong');
+    if (chosen !== null) opts[chosen].classList.add('wrong');
   } else {
     tajarin.correct++;
   }
@@ -817,6 +774,7 @@ function nextTajarin() {
 }
 
 function finishTajarin() {
+  clearTimeout(tajarinTimer);
   const elapsed = Math.round((Date.now() - tajarin.startTime) / 1000);
   const score = tajarin.correct;
 
@@ -841,30 +799,17 @@ function finishTajarin() {
 // ═══════════════════════════════════════════
 // BAGNA FREIDA QUIZ
 // ═══════════════════════════════════════════
-function initBagna() {
-  bagnaSeconds = 60;
-  updateTimerUI();
-  clearInterval(bagnaTimer);
-  bagnaTimer = setInterval(() => {
-    bagnaSeconds--;
-    updateTimerUI();
-    if (bagnaSeconds <= 0) {
-      clearInterval(bagnaTimer);
-      submitBagna(true);
-    }
-  }, 1000);
-}
+let bagnaTimer = null;
 
-function updateTimerUI() {
-  const el = document.getElementById('bagna-timer');
-  el.textContent = bagnaSeconds;
-  const deg = (bagnaSeconds / 60) * 360;
-  el.style.background = `conic-gradient(var(--gold) ${deg}deg, #E5DDD2 ${deg}deg)`;
-  if (bagnaSeconds <= 15) el.classList.add('urgent'); else el.classList.remove('urgent');
+function initBagna() {
+  clearTimeout(bagnaTimer);
+  bagnaTimer = setTimeout(() => {
+    submitBagna(true);
+  }, QUIZ_TIMEOUT);
 }
 
 function submitBagna(timeout) {
-  clearInterval(bagnaTimer);
+  clearTimeout(bagnaTimer);
   const val = document.getElementById('inp-aglio').value;
   const kg = parseFloat(val) || 0;
 
