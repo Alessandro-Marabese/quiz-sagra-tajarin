@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Quiz Sagra – Pro Loco Villafranca d'Asti</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap');
+
+  :root {
+    --gold:    #C9962A;
+    --gold-lt: #F0D07A;
+    --cream:   #FAF6EE;
+    --brown:   #3D2B1F;
+    --rust:    #A03020;
+    --green:   #2E5940;
+    --text:    #1E1410;
+    --muted:   #7A6555;
+    --card:    #FFFFFF;
+    --radius:  14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--cream);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--brown);
+    padding: 18px 20px 14px;
+    text-align: center;
+    position: relative;
+  }
+  .header-eyebrow {
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--gold-lt);
+    margin-bottom: 4px;
+  }
+  .header-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.1;
+  }
+  .header-title span { color: var(--gold); }
+  .header-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.55);
+    margin-top: 4px;
+  }
+
+  /* ── ORNAMENT ── */
+  .ornament {
+    height: 6px;
+    background: linear-gradient(90deg, var(--brown), var(--gold), var(--brown));
+  }
+
+  /* ── SCREEN ── */
+  .screen { display: none; padding: 24px 18px 40px; }
+  .screen.active { display: block; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 20px 18px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 12px rgba(61,43,31,0.08);
+    border: 1px solid rgba(201,150,42,0.15);
+  }
+
+  /* ── TYPOGRAPHY ── */
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 21px;
+    color: var(--brown);
+    margin-bottom: 10px;
+    line-height: 1.25;
+  }
+  h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  p { font-size: 14px; line-height: 1.6; color: var(--text); }
+  .muted { color: var(--muted); font-size: 13px; }
+
+  /* ── INFO BADGE ── */
+  .info-badge {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: rgba(201,150,42,0.1);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 8px 8px 0;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--brown);
+  }
+  .info-badge .icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── FORM ── */
+  .form-group { margin-bottom: 16px; }
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  input[type="text"],
+  input[type="email"],
+  input[type="number"] {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1.5px solid #DDD5C8;
+    border-radius: 10px;
+    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    outline: none;
+    transition: border-color .2s;
+    -webkit-appearance: none;
+  }
+  input:focus { border-color: var(--gold); background: #fff; }
+  input::placeholder { color: #BEB0A0; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 50px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    text-align: center;
+    transition: transform .15s, box-shadow .15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--gold), #A87820);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(201,150,42,0.4);
+  }
+  .btn-ghost {
+    background: transparent;
+    border: 2px solid var(--brown);
+    color: var(--brown);
+  }
+  .btn + .btn { margin-top: 10px; }
+  .btn:disabled {
+    opacity: 0.45;
+    pointer-events: none;
+  }
+
+  /* ── DAY SELECTOR ── */
+  .day-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
+  .day-card {
+    background: var(--card);
+    border: 2px solid #E5DDD2;
+    border-radius: var(--radius);
+    padding: 18px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .day-card:active { transform: scale(0.97); }
+  .day-card.selected { border-color: var(--gold); background: rgba(201,150,42,0.07); }
+  .day-card .day-icon { font-size: 30px; margin-bottom: 8px; }
+  .day-card .day-label { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--brown); font-weight: 700; }
+  .day-card .day-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+  /* ── QUIZ QUESTION ── */
+  .q-counter {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .q-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--brown);
+    line-height: 1.35;
+    margin-bottom: 20px;
+  }
+  .option-list { display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1.5px solid #E2D9CE;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all .18s;
+    background: var(--cream);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .option:active { transform: scale(0.99); }
+  .option.selected {
+    border-color: var(--gold);
+    background: rgba(201,150,42,0.08);
+  }
+  .option.correct {
+    border-color: var(--green);
+    background: rgba(46,89,64,0.08);
+  }
+  .option.wrong {
+    border-color: var(--rust);
+    background: rgba(160,48,32,0.07);
+  }
+  .option-letter {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 1.5px solid #C8B89A;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    color: var(--muted);
+    flex-shrink: 0;
+    transition: all .18s;
+  }
+  .option.selected .option-letter { background: var(--gold); border-color: var(--gold); color: #fff; }
+  .option.correct .option-letter { background: var(--green); border-color: var(--green); color: #fff; }
+  .option.wrong .option-letter { background: var(--rust); border-color: var(--rust); color: #fff; }
+  .option-text { font-size: 14px; line-height: 1.4; color: var(--text); }
+
+  /* ── PROGRESS ── */
+  .progress-bar {
+    height: 4px;
+    background: #E5DDD2;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), #A87820);
+    border-radius: 10px;
+    transition: width .4s ease;
+  }
+
+  /* ── TIMER ── */
+  .timer-ring {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .timer-circle {
+    width: 70px; height: 70px;
+    border-radius: 50%;
+    background: conic-gradient(var(--gold) 0deg, #E5DDD2 0deg);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--brown);
+    box-shadow: inset 0 0 0 6px var(--cream);
+    transition: background .1s linear;
+  }
+  .timer-circle.urgent { color: var(--rust); }
+
+  /* ── NUMERIC INPUT ── */
+  .big-input-wrap { text-align: center; margin: 20px 0; }
+  .big-input {
+    width: 100%;
+    text-align: center;
+    font-size: 36px !important;
+    font-family: 'Playfair Display', serif !important;
+    font-weight: 700;
+    padding: 16px 14px !important;
+    border-radius: 14px !important;
+    letter-spacing: 2px;
+  }
+  .big-input-unit { font-size: 13px; color: var(--muted); margin-top: 6px; }
+
+  /* ── RESULT SCREEN ── */
+  .result-trophy {
+    text-align: center;
+    font-size: 64px;
+    margin-bottom: 16px;
+  }
+  .score-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--brown);
+    color: var(--gold-lt);
+    border-radius: 50px;
+    padding: 8px 20px;
+    font-size: 22px;
+    font-weight: 700;
+    font-family: 'Playfair Display', serif;
+    margin-bottom: 6px;
+  }
+  .time-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(201,150,42,0.12);
+    color: var(--brown);
+    border-radius: 50px;
+    padding: 6px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+
+  /* ── ADMIN ── */
+  .admin-btn {
+    position: fixed;
+    bottom: 20px; right: 20px;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--brown);
+    border: none;
+    color: var(--gold);
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+    z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .admin-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(30,20,16,0.7);
+    z-index: 200;
+    backdrop-filter: blur(4px);
+  }
+  .admin-overlay.open { display: flex; align-items: flex-end; }
+  .admin-panel {
+    background: var(--cream);
+    border-radius: 20px 20px 0 0;
+    padding: 24px 18px 36px;
+    width: 100%;
+  }
+  .admin-panel h2 { margin-bottom: 16px; }
+  .admin-pin-wrap { display: flex; gap: 10px; margin-bottom: 16px; }
+  .admin-pin-wrap input { flex: 1; }
+  .admin-pin-wrap button { flex-shrink: 0; padding: 13px 18px; border-radius: 10px; background: var(--brown); color: #fff; border: none; font-size: 15px; font-weight: 600; cursor: pointer; }
+
+  .leaderboard { margin-top: 12px; }
+  .lb-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin-bottom: 6px;
+    background: var(--card);
+    font-size: 13px;
+  }
+  .lb-rank { font-weight: 700; color: var(--gold); width: 20px; text-align: center; }
+  .lb-name { flex: 1; font-weight: 600; color: var(--brown); }
+  .lb-score { color: var(--muted); font-size: 12px; }
+  .lb-day { font-size: 10px; background: var(--brown); color: var(--gold-lt); padding: 2px 7px; border-radius: 20px; }
+
+  .error-msg { color: var(--rust); font-size: 13px; margin-top: 8px; text-align: center; display: none; }
+
+  /* ── DIVIDER ── */
+  .divider { height: 1px; background: #E5DDD2; margin: 16px 0; }
+
+  /* ── CLOSED NOTICE ── */
+  .closed-notice {
+    text-align: center;
+    padding: 30px 20px;
+  }
+  .closed-notice .icon { font-size: 48px; margin-bottom: 14px; }
+  .closed-notice p { color: var(--muted); font-size: 15px; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-eyebrow">Pro Loco Villafranca d'Asti</div>
+  <div class="header-title">Quiz <span>Sagra</span></div>
+  <div class="header-sub">Edizione 2025</div>
+</div>
+<div class="ornament"></div>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 0 — SELEZIONE GIORNO
+══════════════════════════════════════════════ -->
+<div id="screen-day" class="screen active">
+  <div class="card">
+    <h2>Benvenuto!</h2>
+    <p class="muted" style="margin-bottom:18px;">Scegli il quiz della serata per partecipare all'estrazione del premio 🏆</p>
+    <div class="day-grid">
+      <div class="day-card" id="day-venerdi" onclick="selectDay('venerdi')">
+        <div class="day-icon">🧄</div>
+        <div class="day-label">Venerdì</div>
+        <div class="day-sub">3 Luglio</div>
+        <div class="day-sub" style="margin-top:4px;font-weight:600;">Bagna Freida</div>
+      </div>
+      <div class="day-card" id="day-sabato" onclick="selectDay('sabato')">
+        <div class="day-icon">🍝</div>
+        <div class="day-label">Sabato</div>
+        <div class="day-sub">4 Luglio</div>
+        <div class="day-sub" style="margin-top:4px;font-weight:600;">Tajarin</div>
+      </div>
+    </div>
+  </div>
+  <button class="btn btn-primary" id="btn-day-next" onclick="gotoRegistration()" disabled>Continua →</button>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 1 — REGISTRAZIONE
+══════════════════════════════════════════════ -->
+<div id="screen-reg" class="screen">
+  <div class="card">
+    <h3>Registrati</h3>
+    <p class="muted" style="margin-bottom:18px;">I tuoi dati servono solo per la premiazione 🎁</p>
+
+    <div class="form-group">
+      <label>Nome *</label>
+      <input type="text" id="inp-nome" placeholder="Es. Marco" autocomplete="given-name">
+    </div>
+    <div class="form-group">
+      <label>Cognome *</label>
+      <input type="text" id="inp-cognome" placeholder="Es. Rossi" autocomplete="family-name">
+    </div>
+    <div class="form-group">
+      <label>E-mail *</label>
+      <input type="email" id="inp-mail" placeholder="mario@esempio.it" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label>Numero di telefono</label>
+      <input type="text" id="inp-tel" placeholder="Es. 347 0001122" autocomplete="tel">
+    </div>
+  </div>
+
+  <div class="info-badge">
+    <span class="icon">ℹ️</span>
+    <span id="reg-info-text">Il quiz è aperto dalle <strong>19:00 alle 22:00</strong>.<br>Premiazione ore <strong>22:30</strong>.</span>
+  </div>
+
+  <div id="reg-error" class="error-msg">Compila Nome, Cognome e Mail per continuare.</div>
+  <button class="btn btn-primary" onclick="startQuiz()">Inizia il Quiz 🎯</button>
+  <button class="btn btn-ghost" onclick="goTo('screen-day')" style="margin-top:10px;">← Indietro</button>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 2a — QUIZ TAJARIN (multipla)
+══════════════════════════════════════════════ -->
+<div id="screen-tajarin" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="tajarin-progress"></div></div>
+
+  <div class="card">
+    <div class="q-counter" id="tajarin-counter"></div>
+    <div class="q-text" id="tajarin-qtext"></div>
+    <div class="option-list" id="tajarin-options"></div>
+  </div>
+
+  <button class="btn btn-primary" id="btn-tajarin-next" onclick="nextTajarin()" disabled>Prossima domanda →</button>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 2b — QUIZ BAGNA FREIDA (numerico)
+══════════════════════════════════════════════ -->
+<div id="screen-bagna" class="screen">
+  <div class="timer-ring">
+    <div class="timer-circle" id="bagna-timer">60</div>
+  </div>
+
+  <div class="card">
+    <h2>Quanti kg di aglio abbiamo usato?</h2>
+    <div class="divider"></div>
+    <p>Sui pannelli trovi la nostra ricetta.<br><br>
+    Considera che in questa piazza ci sono <strong>350 posti a sedere</strong> e la festa si svolge <strong>venerdì e sabato sera</strong>. Ma non a tutti piace l'aglio!<br><br>
+    Quanto aglio è stato utilizzato per preparare la Bagna Freida per <strong>due servizi serali</strong>?</p>
+
+    <div class="big-input-wrap">
+      <input type="number" id="inp-aglio" class="big-input" placeholder="0.0" step="0.1" min="0" inputmode="decimal">
+      <div class="big-input-unit">chilogrammi (es. 12.5)</div>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" id="btn-bagna-submit" onclick="submitBagna()">Conferma risposta 🧄</button>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 3 — RISULTATO
+══════════════════════════════════════════════ -->
+<div id="screen-result" class="screen">
+  <div class="result-trophy">🏆</div>
+
+  <div class="card" style="text-align:center;">
+    <h3 style="margin-bottom:12px;">Complimenti!</h3>
+    <h2 id="result-name" style="margin-bottom:6px;"></h2>
+    <p class="muted" style="margin-bottom:16px;">Hai completato il quiz ufficiale della<br><strong>Pro Loco Villafranca d'Asti</strong></p>
+
+    <div id="result-score-wrap" style="display:none;">
+      <div class="score-pill" id="result-score"></div><br>
+      <div class="time-pill" id="result-time"></div>
+    </div>
+
+    <div id="result-bagna-wrap" style="display:none;">
+      <div class="score-pill" id="result-bagna"></div>
+    </div>
+
+    <div class="divider"></div>
+    <p>Aspetta le <strong>22:30</strong> per scoprire se sei il Vincitore! 🎉</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     ADMIN OVERLAY
+══════════════════════════════════════════════ -->
+<button class="admin-btn" onclick="openAdmin()" title="Admin">⚙</button>
+
+<div class="admin-overlay" id="admin-overlay" onclick="closeAdmin(event)">
+  <div class="admin-panel" onclick="event.stopPropagation()">
+    <h2>🔐 Area Organizzatori</h2>
+
+    <div id="admin-locked">
+      <div class="admin-pin-wrap">
+        <input type="password" id="admin-pin" placeholder="PIN organizzatore" inputmode="numeric" pattern="[0-9]*">
+        <button onclick="checkPin()">Entra</button>
+      </div>
+      <div class="error-msg" id="pin-error" style="display:none;">PIN errato. Riprova.</div>
+    </div>
+
+    <div id="admin-content" style="display:none;">
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+        <button onclick="showLeaderboard('tajarin')" style="flex:1;padding:10px;background:var(--brown);color:var(--gold-lt);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">🍝 Tajarin</button>
+        <button onclick="showLeaderboard('venerdi')" style="flex:1;padding:10px;background:var(--brown);color:var(--gold-lt);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">🧄 Bagna</button>
+        <button onclick="exportCSV()" style="flex:1;padding:10px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">📥 CSV</button>
+        <button onclick="clearConfirm()" style="flex:1;padding:10px;background:var(--rust);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">🗑 Reset</button>
+      </div>
+      <div class="leaderboard" id="leaderboard-content"></div>
+    </div>
+
+    <button class="btn btn-ghost" style="margin-top:16px;" onclick="closeAdmin(null)">Chiudi</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════
+const ADMIN_PIN = "2025";
+
+const TAJARIN_Q = [
+  {
+    q: "Quanto sottili vengono tradizionalmente tirati i tajarin?",
+    opts: ["0,5 millimetri","3 millimetri","1 millimetro","Non c'è un valore identificativo"],
+    correct: 2
+  },
+  {
+    q: "Da quale secolo si hanno testimonianze dei tajarin?",
+    opts: ["Impossibile saperlo","Tra '800 e '900 come testimonia la canzone la Monferrina","Tra '400 e '500 grazie alla trasmissione orale delle famiglie contadine","Dal 35 a.C."],
+    correct: 2
+  },
+  {
+    q: "Quale tra queste affermazioni sul tajarin è storicamente più corretta?",
+    opts: ["Nasce come piatto per le corti grazie a Vittorio Emanuele II","Era spesso preparato nelle occasioni festive e nelle grandi tavolate familiari","Veniva consumato prevalentemente nelle osterie","È una ricetta moderna comparsa nelle osterie tra '800 e '900"],
+    correct: 1
+  },
+  {
+    q: "Nel processo descritto, quale funzione svolge il pistone a vite all'interno del torchio?",
+    opts: ["Mescola la semola e l'acqua tiepida nella gramola","Miscela l'impasto rotando e lo spinge verso la molazza in marmo","Spinge l'impasto attraverso la trafila di rame per conferirgli la forma","Raffredda l'impasto distribuendolo sulle pareti prima dell'estrusione"],
+    correct: 2
+  },
+  {
+    q: "Quali sono le caratteristiche fondamentali dei tajarin?",
+    opts: ["Lungo, sottile, elastico e spesso 3mm","Lungo, sottile, profumatissimo e trasparente","Dorato, lungo, elastico e profumatissimo","Dorato, sottile, lungo e profumatissimo"],
+    correct: 3
+  },
+  {
+    q: "Quanti tuorli ha la ricetta tradizionale dei tajarin usata originariamente dalle famiglie per gli eventi speciali?",
+    opts: ["Non si sa perché non esiste una ricetta unica","30 tuorli / kg farina","30 tuorli / kg impasto","Quelli sufficienti per far diventare l'impasto dorato"],
+    correct: 1
+  },
+  {
+    q: "Tradizionalmente, come venivano tagliati i tajarin?",
+    opts: ["Con una macchina elettrica","Con una rotella dentata chiamata sperone","A mano, con il coltello","Con le forbici"],
+    correct: 2
+  },
+  {
+    q: "Perché i tajarin erano considerati un piatto \"ricco\"?",
+    opts: ["Perché erano serviti alle corti in Piemonte e Liguria","Per la presenza di farina di meliga","Per l'elevato numero di uova utilizzate","Per la presenza del tartufo"],
+    correct: 2
+  },
+  {
+    q: "Perché il tajarin tradizionale piemontese presenta normalmente una colorazione molto intensa?",
+    opts: ["Per l'utilizzo di zafferano nell'impasto","Per l'elevata presenza di tuorli d'uovo","Per la cottura molto breve e quasi al dente","Per l'utilizzo di farina di semola di grano duro"],
+    correct: 1
+  },
+  {
+    q: "Perché il tajarin tradizionale viene generalmente tagliato molto sottile?",
+    opts: ["Per velocizzare esclusivamente la cottura","Per aumentare il rapporto superficie/sugo e ottenere maggiore delicatezza al palato","Per migliorare la digeribilità","Per aumentare la conservabilità"],
+    correct: 1
+  },
+  {
+    q: "Quale di queste affermazioni è quella corretta?",
+    opts: [
+      "La Chitarra è uno strumento con corde metalliche usato tra 400 e 600' per ottenere fili di pasta come i tajarin",
+      "Nell'800 la macchina per la sfoglia permette uno spessore uniforme grazie a due rulli azionati a pedale",
+      "Oggi la macchina per la sfoglia non esiste più in quanto sostituita dalle calibratrici industriali",
+      "Già nel XIII secolo era possibile ottenere i taglioli con il solo uso del mattarello"
+    ],
+    correct: 1
+  },
+  {
+    q: "Quale antico termine, citato da Al-Idrisi nella descrizione di Trabia, indicava una pasta tagliata a strisce?",
+    opts: ["Itriya","Itrijah","Itriyah","Itriyal"],
+    correct: 2
+  }
+];
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let selectedDay = null;
+let currentUser = {};
+let tajarin = { current: 0, answers: [], correct: 0, startTime: 0 };
+let bagnaTimer = null;
+let bagnaSeconds = 60;
+
+// ═══════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function selectDay(day) {
+  selectedDay = day;
+  document.querySelectorAll('.day-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('day-' + day).classList.add('selected');
+  document.getElementById('btn-day-next').disabled = false;
+}
+
+function gotoRegistration() {
+  if (!selectedDay) return;
+  // Set info text
+  if (selectedDay === 'venerdi') {
+    document.getElementById('reg-info-text').innerHTML = 'Il quiz è aperto dalle <strong>19:00 alle 22:00</strong> di venerdì 3 luglio.<br>Premiazione ore <strong>22:30</strong>.';
+  } else {
+    document.getElementById('reg-info-text').innerHTML = 'Il quiz è aperto dalle <strong>19:00 alle 22:00</strong> di sabato 4 luglio.<br>Premiazione ore <strong>22:30</strong>.';
+  }
+  goTo('screen-reg');
+}
+
+function startQuiz() {
+  const nome = document.getElementById('inp-nome').value.trim();
+  const cognome = document.getElementById('inp-cognome').value.trim();
+  const mail = document.getElementById('inp-mail').value.trim();
+  const tel = document.getElementById('inp-tel').value.trim();
+  const err = document.getElementById('reg-error');
+
+  if (!nome || !cognome || !mail) {
+    err.style.display = 'block'; return;
+  }
+  err.style.display = 'none';
+  currentUser = { nome, cognome, mail, tel, day: selectedDay, ts: Date.now() };
+
+  if (selectedDay === 'sabato') {
+    initTajarin();
+    goTo('screen-tajarin');
+  } else {
+    initBagna();
+    goTo('screen-bagna');
+  }
+}
+
+// ═══════════════════════════════════════════
+// TAJARIN QUIZ
+// ═══════════════════════════════════════════
+function initTajarin() {
+  tajarin = { current: 0, answers: [], correct: 0, startTime: Date.now() };
+  renderTajarinQ();
+}
+
+function renderTajarinQ() {
+  const i = tajarin.current;
+  const total = TAJARIN_Q.length;
+  const q = TAJARIN_Q[i];
+
+  document.getElementById('tajarin-counter').textContent = `Domanda ${i+1} di ${total}`;
+  document.getElementById('tajarin-qtext').textContent = q.q;
+  document.getElementById('tajarin-progress').style.width = ((i / total) * 100) + '%';
+
+  const letters = ['A','B','C','D'];
+  const ol = document.getElementById('tajarin-options');
+  ol.innerHTML = '';
+  q.opts.forEach((opt, idx) => {
+    const div = document.createElement('div');
+    div.className = 'option';
+    div.innerHTML = `<div class="option-letter">${letters[idx]}</div><div class="option-text">${opt}</div>`;
+    div.onclick = () => selectOption(idx);
+    ol.appendChild(div);
+  });
+
+  document.getElementById('btn-tajarin-next').disabled = true;
+  const btnLabel = (i === total - 1) ? 'Vedi risultato 🏆' : 'Prossima domanda →';
+  document.getElementById('btn-tajarin-next').textContent = btnLabel;
+}
+
+function selectOption(idx) {
+  const opts = document.querySelectorAll('#tajarin-options .option');
+  opts.forEach(o => o.classList.remove('selected'));
+  opts[idx].classList.add('selected');
+  tajarin.pendingAnswer = idx;
+  document.getElementById('btn-tajarin-next').disabled = false;
+}
+
+function nextTajarin() {
+  const i = tajarin.current;
+  const q = TAJARIN_Q[i];
+  const chosen = tajarin.pendingAnswer;
+  const opts = document.querySelectorAll('#tajarin-options .option');
+
+  // Show correct/wrong
+  opts[q.correct].classList.add('correct');
+  if (chosen !== q.correct) {
+    opts[chosen].classList.add('wrong');
+  } else {
+    tajarin.correct++;
+  }
+  tajarin.answers.push(chosen);
+  document.getElementById('btn-tajarin-next').disabled = true;
+
+  // Short delay then advance
+  setTimeout(() => {
+    tajarin.current++;
+    if (tajarin.current < TAJARIN_Q.length) {
+      renderTajarinQ();
+    } else {
+      finishTajarin();
+    }
+  }, 900);
+}
+
+function finishTajarin() {
+  const elapsed = Math.round((Date.now() - tajarin.startTime) / 1000);
+  const score = tajarin.correct;
+
+  // Save to storage
+  saveResult({
+    ...currentUser,
+    type: 'tajarin',
+    score,
+    total: TAJARIN_Q.length,
+    seconds: elapsed
+  });
+
+  // Show result
+  document.getElementById('result-name').textContent = currentUser.nome + ' ' + currentUser.cognome;
+  document.getElementById('result-score-wrap').style.display = 'block';
+  document.getElementById('result-bagna-wrap').style.display = 'none';
+  document.getElementById('result-score').textContent = `✅ ${score} / ${TAJARIN_Q.length}`;
+  document.getElementById('result-time').textContent = `⏱ ${formatTime(elapsed)}`;
+  goTo('screen-result');
+}
+
+// ═══════════════════════════════════════════
+// BAGNA FREIDA QUIZ
+// ═══════════════════════════════════════════
+function initBagna() {
+  bagnaSeconds = 60;
+  updateTimerUI();
+  clearInterval(bagnaTimer);
+  bagnaTimer = setInterval(() => {
+    bagnaSeconds--;
+    updateTimerUI();
+    if (bagnaSeconds <= 0) {
+      clearInterval(bagnaTimer);
+      submitBagna(true);
+    }
+  }, 1000);
+}
+
+function updateTimerUI() {
+  const el = document.getElementById('bagna-timer');
+  el.textContent = bagnaSeconds;
+  const deg = (bagnaSeconds / 60) * 360;
+  el.style.background = `conic-gradient(var(--gold) ${deg}deg, #E5DDD2 ${deg}deg)`;
+  if (bagnaSeconds <= 15) el.classList.add('urgent'); else el.classList.remove('urgent');
+}
+
+function submitBagna(timeout) {
+  clearInterval(bagnaTimer);
+  const val = document.getElementById('inp-aglio').value;
+  const kg = parseFloat(val) || 0;
+
+  saveResult({
+    ...currentUser,
+    type: 'bagna',
+    risposta_kg: kg,
+    timeout: !!timeout
+  });
+
+  document.getElementById('result-name').textContent = currentUser.nome + ' ' + currentUser.cognome;
+  document.getElementById('result-score-wrap').style.display = 'none';
+  document.getElementById('result-bagna-wrap').style.display = 'block';
+  document.getElementById('result-bagna').textContent = kg > 0 ? `🧄 ${kg} kg` : '🧄 —';
+  goTo('screen-result');
+}
+
+// ═══════════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════════
+const STORAGE_KEY = 'sagra_results_2025';
+
+function loadResults() {
+  try {
+    const raw = window.storage ? null : localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+async function saveResult(entry) {
+  try {
+    if (window.storage) {
+      // Claude artifact storage (persistent across sessions)
+      const existing = await window.storage.get(STORAGE_KEY).catch(() => null);
+      const list = existing ? JSON.parse(existing.value) : [];
+      list.push(entry);
+      await window.storage.set(STORAGE_KEY, JSON.stringify(list));
+    } else {
+      // Fallback: localStorage
+      const list = loadResults();
+      list.push(entry);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    }
+  } catch (e) {
+    console.warn('Storage error', e);
+  }
+}
+
+async function getResults() {
+  try {
+    if (window.storage) {
+      const r = await window.storage.get(STORAGE_KEY).catch(() => null);
+      return r ? JSON.parse(r.value) : [];
+    } else {
+      return loadResults();
+    }
+  } catch { return []; }
+}
+
+async function clearResults() {
+  try {
+    if (window.storage) {
+      await window.storage.delete(STORAGE_KEY);
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  } catch {}
+}
+
+// ═══════════════════════════════════════════
+// ADMIN
+// ═══════════════════════════════════════════
+function openAdmin() {
+  document.getElementById('admin-overlay').classList.add('open');
+  document.getElementById('admin-content').style.display = 'none';
+  document.getElementById('admin-locked').style.display = 'block';
+  document.getElementById('admin-pin').value = '';
+  document.getElementById('pin-error').style.display = 'none';
+}
+
+function closeAdmin(e) {
+  if (e && e.target !== document.getElementById('admin-overlay')) return;
+  document.getElementById('admin-overlay').classList.remove('open');
+}
+
+function checkPin() {
+  const pin = document.getElementById('admin-pin').value;
+  if (pin === ADMIN_PIN) {
+    document.getElementById('admin-locked').style.display = 'none';
+    document.getElementById('admin-content').style.display = 'block';
+    showLeaderboard('tajarin');
+  } else {
+    document.getElementById('pin-error').style.display = 'block';
+  }
+}
+
+async function showLeaderboard(type) {
+  const results = await getResults();
+  const filtered = results.filter(r => r.type === type || (type === 'venerdi' && r.type === 'bagna'));
+  const container = document.getElementById('leaderboard-content');
+
+  if (!filtered.length) {
+    container.innerHTML = '<p class="muted" style="text-align:center;padding:20px;">Nessun partecipante ancora.</p>';
+    return;
+  }
+
+  // Sort
+  let sorted;
+  if (type === 'tajarin') {
+    sorted = [...filtered].sort((a, b) => b.score - a.score || a.seconds - b.seconds);
+  } else {
+    // Bagna freida: chi si avvicina di più (senza conoscere la risposta, mostriamo solo le risposte)
+    sorted = [...filtered].sort((a, b) => a.ts - b.ts);
+  }
+
+  container.innerHTML = `<h3 style="margin-bottom:10px;">${type === 'tajarin' ? '🍝 Classifica Tajarin' : '🧄 Risposte Bagna Freida'}</h3>` +
+    sorted.slice(0, 50).map((r, i) => `
+      <div class="lb-row">
+        <span class="lb-rank">${i+1}</span>
+        <span class="lb-name">${esc(r.nome)} ${esc(r.cognome)}</span>
+        <span class="lb-score">
+          ${type === 'tajarin' ? `✅ ${r.score}/${r.total} · ⏱ ${formatTime(r.seconds)}` : `🧄 ${r.risposta_kg ?? '—'} kg`}
+        </span>
+      </div>
+    `).join('');
+}
+
+async function exportCSV() {
+  const results = await getResults();
+  if (!results.length) { alert('Nessun dato da esportare.'); return; }
+
+  const rows = [['Nome','Cognome','Mail','Tel','Giorno','Tipo','Punteggio','Totale','Secondi','Risposta_kg','Timestamp']];
+  results.forEach(r => {
+    rows.push([
+      r.nome, r.cognome, r.mail, r.tel || '',
+      r.day, r.type,
+      r.score ?? '', r.total ?? '', r.seconds ?? '',
+      r.risposta_kg ?? '',
+      new Date(r.ts).toLocaleString('it-IT')
+    ]);
+  });
+
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url;
+  a.download = 'quiz_sagra_2025.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function clearConfirm() {
+  if (confirm('Sei sicuro di voler cancellare TUTTI i dati? Questa operazione non è reversibile!')) {
+    clearResults().then(() => {
+      document.getElementById('leaderboard-content').innerHTML = '<p class="muted" style="text-align:center;padding:20px;">Dati cancellati.</p>';
+    });
+  }
+}
+
+// ═══════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════
+function formatTime(s) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return m > 0 ? `${m}m ${sec}s` : `${sec}s`;
+}
+
+function esc(str) {
+  return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+// Enter key on PIN
+document.getElementById('admin-pin').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkPin();
+});
+</script>
+</body>
+</html>
