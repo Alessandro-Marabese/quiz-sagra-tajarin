@@ -471,7 +471,10 @@
      SCREEN 2a — QUIZ TAJARIN (multipla)
 ══════════════════════════════════════════════ -->
 <div id="screen-tajarin" class="screen">
-  <div class="progress-bar"><div class="progress-fill" id="tajarin-progress"></div></div>
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+    <div class="progress-bar" style="flex:1; margin-bottom:0;"><div class="progress-fill" id="tajarin-progress"></div></div>
+    <div class="timer-circle" id="tajarin-timer" style="width:48px;height:48px;font-size:16px;flex-shrink:0;">60</div>
+  </div>
 
   <div class="card">
     <div class="q-counter" id="tajarin-counter"></div>
@@ -699,8 +702,11 @@ function startQuiz() {
 // ═══════════════════════════════════════════
 // TAJARIN QUIZ
 // ═══════════════════════════════════════════
+let tajarinTimer = null;
+const TAJARIN_Q_TIME = 60; // secondi per domanda
+
 function initTajarin() {
-  tajarin = { current: 0, answers: [], correct: 0, startTime: Date.now() };
+  tajarin = { current: 0, answers: [], correct: 0, startTime: Date.now(), pendingAnswer: null };
   renderTajarinQ();
 }
 
@@ -725,8 +731,55 @@ function renderTajarinQ() {
   });
 
   document.getElementById('btn-tajarin-next').disabled = true;
+  tajarin.pendingAnswer = null;
   const btnLabel = (i === total - 1) ? 'Vedi risultato 🏆' : 'Prossima domanda →';
   document.getElementById('btn-tajarin-next').textContent = btnLabel;
+
+  // Avvia timer per domanda
+  startTajarinTimer();
+}
+
+function startTajarinTimer() {
+  clearInterval(tajarinTimer);
+  let secs = TAJARIN_Q_TIME;
+  updateTajarinTimerUI(secs);
+
+  tajarinTimer = setInterval(() => {
+    secs--;
+    updateTajarinTimerUI(secs);
+    if (secs <= 0) {
+      clearInterval(tajarinTimer);
+      // Tempo scaduto: risposta errata, avanza
+      timeoutTajarin();
+    }
+  }, 1000);
+}
+
+function updateTajarinTimerUI(secs) {
+  const el = document.getElementById('tajarin-timer');
+  el.textContent = secs;
+  const deg = (secs / TAJARIN_Q_TIME) * 360;
+  el.style.background = `conic-gradient(var(--gold) ${deg}deg, #E5DDD2 ${deg}deg)`;
+  if (secs <= 15) el.classList.add('urgent'); else el.classList.remove('urgent');
+}
+
+function timeoutTajarin() {
+  // Mostra risposta corretta, nessuna errata evidenziata (non ha risposto)
+  const q = TAJARIN_Q[tajarin.current];
+  const opts = document.querySelectorAll('#tajarin-options .option');
+  opts[q.correct].classList.add('correct');
+  opts.forEach(o => o.style.pointerEvents = 'none');
+  tajarin.answers.push(null); // null = non risposto = errato
+  document.getElementById('btn-tajarin-next').disabled = true;
+
+  setTimeout(() => {
+    tajarin.current++;
+    if (tajarin.current < TAJARIN_Q.length) {
+      renderTajarinQ();
+    } else {
+      finishTajarin();
+    }
+  }, 900);
 }
 
 function selectOption(idx) {
@@ -738,12 +791,13 @@ function selectOption(idx) {
 }
 
 function nextTajarin() {
+  clearInterval(tajarinTimer);
   const i = tajarin.current;
   const q = TAJARIN_Q[i];
   const chosen = tajarin.pendingAnswer;
   const opts = document.querySelectorAll('#tajarin-options .option');
 
-  // Show correct/wrong
+  opts.forEach(o => o.style.pointerEvents = 'none');
   opts[q.correct].classList.add('correct');
   if (chosen !== q.correct) {
     opts[chosen].classList.add('wrong');
@@ -753,7 +807,6 @@ function nextTajarin() {
   tajarin.answers.push(chosen);
   document.getElementById('btn-tajarin-next').disabled = true;
 
-  // Short delay then advance
   setTimeout(() => {
     tajarin.current++;
     if (tajarin.current < TAJARIN_Q.length) {
