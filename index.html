@@ -681,14 +681,13 @@ function startQuiz() {
   const nome = document.getElementById('inp-nome').value.trim();
   const cognome = document.getElementById('inp-cognome').value.trim();
   const mail = document.getElementById('inp-mail').value.trim();
-  const tel = document.getElementById('inp-tel').value.trim();
   const err = document.getElementById('reg-error');
 
   if (!nome || !cognome || !mail) {
     err.style.display = 'block'; return;
   }
   err.style.display = 'none';
-  currentUser = { nome, cognome, mail, tel, day: selectedDay, ts: Date.now() };
+  currentUser = { nome, cognome, mail, day: selectedDay, ts: Date.now() };
 
   if (selectedDay === 'sabato') {
     initTajarin();
