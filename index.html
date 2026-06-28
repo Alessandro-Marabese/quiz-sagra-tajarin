@@ -449,15 +449,17 @@
       <label>E-mail *</label>
       <input type="email" id="inp-mail" placeholder="mario@esempio.it" autocomplete="email">
     </div>
-    <div class="form-group">
-      <label>Numero di telefono</label>
-      <input type="text" id="inp-tel" placeholder="Es. 347 0001122" autocomplete="tel">
-    </div>
+
   </div>
 
   <div class="info-badge">
     <span class="icon">ℹ️</span>
     <span id="reg-info-text">Il quiz è aperto dalle <strong>19:00 alle 22:00</strong>.<br>Premiazione ore <strong>22:30</strong>.</span>
+  </div>
+
+  <div class="info-badge" style="border-left-color: var(--brown); background: rgba(61,43,31,0.06);">
+    <span class="icon">🎯</span>
+    <span id="reg-game-text"></span>
   </div>
 
   <div id="reg-error" class="error-msg">Compila Nome, Cognome e Mail per continuare.</div>
@@ -493,7 +495,7 @@
     <div class="divider"></div>
     <p>Sui pannelli trovi la nostra ricetta.<br><br>
     Considera che in questa piazza ci sono <strong>350 posti a sedere</strong> e la festa si svolge <strong>venerdì e sabato sera</strong>. Ma non a tutti piace l'aglio!<br><br>
-    Quanto aglio è stato utilizzato per preparare la Bagna Freida per <strong>due servizi serali</strong>?</p>
+    Quanto pesava l'aglio utilizzato per preparare la bagna freida per <strong>due servizi serali</strong>?</p>
 
     <div class="big-input-wrap">
       <input type="number" id="inp-aglio" class="big-input" placeholder="0.0" step="0.1" min="0" inputmode="decimal">
@@ -664,8 +666,10 @@ function gotoRegistration() {
   // Set info text
   if (selectedDay === 'venerdi') {
     document.getElementById('reg-info-text').innerHTML = 'Il quiz è aperto dalle <strong>19:00 alle 22:00</strong> di venerdì 3 luglio.<br>Premiazione ore <strong>22:30</strong>.';
+    document.getElementById('reg-game-text').innerHTML = 'Se hai letto attentamente i pannelli puoi iniziare!<br>Avrai da leggere un indizio riguardante la preparazione della bagna freida dopodiché avrai un minuto di tempo per rispondere alla domanda. Il vincitore del premio sarà chi risponderà il numero che più si avvicina alla realtà.';
   } else {
     document.getElementById('reg-info-text').innerHTML = 'Il quiz è aperto dalle <strong>19:00 alle 22:00</strong> di sabato 4 luglio.<br>Premiazione ore <strong>22:30</strong>.';
+    document.getElementById('reg-game-text').innerHTML = 'Se hai letto attentamente i pannelli puoi iniziare! Avrai da leggere 12 domande riguardanti la storia del tajarin. Il vincitore del premio sarà chi risponderà correttamente a <strong>TUTTE</strong> le domande e nel minor tempo totale.';
   }
   goTo('screen-reg');
 }
