@@ -524,6 +524,10 @@
      SCREEN 2b — QUIZ BAGNA FREIDA (numerico)
 ══════════════════════════════════════════════ -->
 <div id="screen-bagna" class="screen">
+  <div class="timer-ring">
+    <div class="timer-circle" id="bagna-timer">60</div>
+  </div>
+
   <div class="card">
     <h2>Quanti kg di aglio abbiamo usato?</h2>
     <div class="divider"></div>
@@ -841,15 +845,35 @@ function finishTajarin() {
 // ═══════════════════════════════════════════
 // BAGNA FREIDA QUIZ
 // ═══════════════════════════════════════════
+let bagnaSeconds = 60;
+
 function initBagna() {
+  bagnaSeconds = 60;
+  updateBagnaTimerUI();
   clearTimeout(bagnaTimer);
-  bagnaTimer = setTimeout(() => {
-    submitBagna(true);
-  }, QUIZ_TIMEOUT);
+  clearInterval(bagnaTimer);
+  bagnaTimer = setInterval(() => {
+    bagnaSeconds--;
+    updateBagnaTimerUI();
+    if (bagnaSeconds <= 0) {
+      clearInterval(bagnaTimer);
+      submitBagna(true);
+    }
+  }, 1000);
+}
+
+function updateBagnaTimerUI() {
+  const el = document.getElementById('bagna-timer');
+  el.textContent = bagnaSeconds;
+  const deg = (bagnaSeconds / 60) * 360;
+  el.style.background = `conic-gradient(var(--gold) ${deg}deg, #E5DDD2 ${deg}deg)`;
+  if (bagnaSeconds <= 15) el.classList.add('urgent'); else el.classList.remove('urgent');
 }
 
 function submitBagna(timeout) {
+  clearInterval(bagnaTimer);
   clearTimeout(bagnaTimer);
+  // Salva il valore digitato anche se non confermato, altrimenti 0
   const val = document.getElementById('inp-aglio').value;
   const kg = parseFloat(val) || 0;
 
