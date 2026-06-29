@@ -947,10 +947,9 @@ async function getResults(type) {
 
 async function clearResults() {
   try {
-    // Cancella tutti i record
-    await fetch(`${SUPABASE_URL}/rest/v1/risultati?ts=gte.0`, {
+    await fetch(`${SUPABASE_URL}/rest/v1/risultati?id=gte.0`, {
       method: 'DELETE',
-      headers: HEADERS
+      headers: { ...HEADERS, 'Prefer': 'return=minimal' }
     });
   } catch (e) {
     console.warn('clearResults error', e);
