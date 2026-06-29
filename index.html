@@ -711,7 +711,7 @@ function gotoRegistration() {
   goTo('screen-reg');
 }
 
-function startQuiz() {
+async function startQuiz() {
   const nome = document.getElementById('inp-nome').value.trim();
   const cognome = document.getElementById('inp-cognome').value.trim();
   const mail = document.getElementById('inp-mail').value.trim();
@@ -726,24 +726,28 @@ function startQuiz() {
   if (!gdpr) { gdprErr.style.display = 'block'; return; }
 
   // Controlla se ha già partecipato con questa mail per questo giorno
-  getResults().then(results => {
-    const already = results.find(r => r.mail.toLowerCase() === mail.toLowerCase() && r.day === selectedDay);
-    if (already) {
+  try {
+    const checkUrl = `${SUPABASE_URL}/rest/v1/risultati?mail=ilike.${encodeURIComponent(mail)}&day=eq.${selectedDay}&select=id`;
+    const checkRes = await fetch(checkUrl, { headers: HEADERS });
+    const existing = await checkRes.json();
+    if (existing.length > 0) {
       err.textContent = 'Hai già partecipato al quiz di questa sera con questa email!';
       err.style.display = 'block';
       return;
     }
+  } catch (e) {
+    console.warn('Duplicate check error', e);
+  }
 
-    currentUser = { nome, cognome, mail, day: selectedDay, ts: Date.now() };
+  currentUser = { nome, cognome, mail, day: selectedDay, ts: Date.now() };
 
-    if (selectedDay === 'sabato') {
-      initTajarin();
-      goTo('screen-tajarin');
-    } else {
-      initBagna();
-      goTo('screen-bagna');
-    }
-  });
+  if (selectedDay === 'sabato') {
+    initTajarin();
+    goTo('screen-tajarin');
+  } else {
+    initBagna();
+    goTo('screen-bagna');
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -807,13 +811,8 @@ function nextTajarin() {
   const i = tajarin.current;
   const q = TAJARIN_Q[i];
   const chosen = tajarin.pendingAnswer;
-  const opts = document.querySelectorAll('#tajarin-options .option');
 
-  opts.forEach(o => o.style.pointerEvents = 'none');
-  opts[q.correct].classList.add('correct');
-  if (chosen !== q.correct) {
-    if (chosen !== null) opts[chosen].classList.add('wrong');
-  } else {
+  if (chosen === q.correct) {
     tajarin.correct++;
   }
   tajarin.answers.push(chosen);
@@ -826,7 +825,7 @@ function nextTajarin() {
     } else {
       finishTajarin();
     }
-  }, 900);
+  }, 300);
 }
 
 function finishTajarin() {
@@ -902,55 +901,61 @@ function submitBagna(timeout) {
 }
 
 // ═══════════════════════════════════════════
-// STORAGE
+// STORAGE — Supabase
 // ═══════════════════════════════════════════
-const STORAGE_KEY = 'sagra_results_2025';
-
-function loadResults() {
-  try {
-    const raw = window.storage ? null : localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
-}
+const SUPABASE_URL = 'https://pbopkeezqqsbrsissvap.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBib3BrZWV6cXFzYnJzaXNzdmFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2NjI5MTMsImV4cCI6MjA5ODIzODkxM30.i-7YB23Mxc7OGRIuATEeXlysMexOixduZhBIkYUyO78';
+const HEADERS = {
+  'Content-Type': 'application/json',
+  'apikey': SUPABASE_KEY,
+  'Authorization': `Bearer ${SUPABASE_KEY}`
+};
 
 async function saveResult(entry) {
   try {
-    if (window.storage) {
-      // Claude artifact storage (persistent across sessions)
-      const existing = await window.storage.get(STORAGE_KEY).catch(() => null);
-      const list = existing ? JSON.parse(existing.value) : [];
-      list.push(entry);
-      await window.storage.set(STORAGE_KEY, JSON.stringify(list));
-    } else {
-      // Fallback: localStorage
-      const list = loadResults();
-      list.push(entry);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-    }
+    const row = {
+      nome:        entry.nome,
+      cognome:     entry.cognome,
+      mail:        entry.mail,
+      day:         entry.day,
+      type:        entry.type,
+      score:       entry.score       ?? null,
+      total:       entry.total       ?? null,
+      seconds:     entry.seconds     ?? null,
+      risposta_kg: entry.risposta_kg ?? null,
+      ts:          entry.ts
+    };
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/risultati`, {
+      method: 'POST',
+      headers: { ...HEADERS, 'Prefer': 'return=minimal' },
+      body: JSON.stringify(row)
+    });
+    if (!res.ok) console.warn('Supabase save error', await res.text());
   } catch (e) {
-    console.warn('Storage error', e);
+    console.warn('saveResult error', e);
   }
 }
 
-async function getResults() {
+async function getResults(type) {
   try {
-    if (window.storage) {
-      const r = await window.storage.get(STORAGE_KEY).catch(() => null);
-      return r ? JSON.parse(r.value) : [];
-    } else {
-      return loadResults();
-    }
+    let url = `${SUPABASE_URL}/rest/v1/risultati?order=ts.asc`;
+    if (type) url += `&type=eq.${type}`;
+    const res = await fetch(url, { headers: HEADERS });
+    if (!res.ok) return [];
+    return await res.json();
   } catch { return []; }
 }
 
 async function clearResults() {
   try {
-    if (window.storage) {
-      await window.storage.delete(STORAGE_KEY);
-    } else {
-      localStorage.removeItem(STORAGE_KEY);
-    }
-  } catch {}
+    // Cancella tutti i record
+    await fetch(`${SUPABASE_URL}/rest/v1/risultati?ts=gte.0`, {
+      method: 'DELETE',
+      headers: HEADERS
+    });
+  } catch (e) {
+    console.warn('clearResults error', e);
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -981,31 +986,32 @@ function checkPin() {
 }
 
 async function showLeaderboard(type) {
-  const results = await getResults();
-  const filtered = results.filter(r => r.type === type || (type === 'venerdi' && r.type === 'bagna'));
   const container = document.getElementById('leaderboard-content');
+  container.innerHTML = '<p class="muted" style="text-align:center;padding:20px;">Caricamento...</p>';
 
-  if (!filtered.length) {
+  const supaType = type === 'venerdi' ? 'bagna' : 'tajarin';
+  const results = await getResults(supaType);
+
+  if (!results.length) {
     container.innerHTML = '<p class="muted" style="text-align:center;padding:20px;">Nessun partecipante ancora.</p>';
     return;
   }
 
   // Sort
   let sorted;
-  if (type === 'tajarin') {
-    sorted = [...filtered].sort((a, b) => b.score - a.score || a.seconds - b.seconds);
+  if (supaType === 'tajarin') {
+    sorted = [...results].sort((a, b) => b.score - a.score || a.seconds - b.seconds);
   } else {
-    // Bagna freida: chi si avvicina di più (senza conoscere la risposta, mostriamo solo le risposte)
-    sorted = [...filtered].sort((a, b) => a.ts - b.ts);
+    sorted = [...results].sort((a, b) => a.ts - b.ts);
   }
 
-  container.innerHTML = `<h3 style="margin-bottom:10px;">${type === 'tajarin' ? '🍝 Classifica Tajarin' : '🧄 Risposte Bagna Freida'}</h3>` +
+  container.innerHTML = `<h3 style="margin-bottom:10px;">${supaType === 'tajarin' ? '🍝 Classifica Tajarin' : '🧄 Risposte Bagna Freida'}</h3>` +
     sorted.slice(0, 50).map((r, i) => `
       <div class="lb-row">
         <span class="lb-rank">${i+1}</span>
         <span class="lb-name">${esc(r.nome)} ${esc(r.cognome)}</span>
         <span class="lb-score">
-          ${type === 'tajarin' ? `✅ ${r.score}/${r.total} · ⏱ ${formatTime(r.seconds)}` : `🧄 ${r.risposta_kg ?? '—'} kg`}
+          ${supaType === 'tajarin' ? `✅ ${r.score}/${r.total} · ⏱ ${formatTime(r.seconds)}` : `🧄 ${r.risposta_kg ?? '—'} kg`}
         </span>
       </div>
     `).join('');
@@ -1015,10 +1021,10 @@ async function exportCSV() {
   const results = await getResults();
   if (!results.length) { alert('Nessun dato da esportare.'); return; }
 
-  const rows = [['Nome','Cognome','Mail','Tel','Giorno','Tipo','Punteggio','Totale','Secondi','Risposta_kg','Timestamp']];
+  const rows = [['Nome','Cognome','Mail','Giorno','Tipo','Punteggio','Totale','Secondi','Risposta_kg','Timestamp']];
   results.forEach(r => {
     rows.push([
-      r.nome, r.cognome, r.mail, r.tel || '',
+      r.nome, r.cognome, r.mail,
       r.day, r.type,
       r.score ?? '', r.total ?? '', r.seconds ?? '',
       r.risposta_kg ?? '',
@@ -1030,7 +1036,7 @@ async function exportCSV() {
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href = url;
-  a.download = 'quiz_sagra_2025.csv'; a.click();
+  a.download = 'quiz_sagra_2026.csv'; a.click();
   URL.revokeObjectURL(url);
 }
 
