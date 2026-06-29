@@ -828,13 +828,12 @@ function nextTajarin() {
   }, 300);
 }
 
-function finishTajarin() {
+async function finishTajarin() {
   clearTimeout(tajarinTimer);
   const elapsed = Math.round((Date.now() - tajarin.startTime) / 1000);
   const score = tajarin.correct;
 
-  // Save to storage
-  saveResult({
+  await saveResult({
     ...currentUser,
     type: 'tajarin',
     score,
@@ -879,14 +878,14 @@ function updateBagnaTimerUI() {
   if (bagnaSeconds <= 15) el.classList.add('urgent'); else el.classList.remove('urgent');
 }
 
-function submitBagna(timeout) {
+async function submitBagna(timeout) {
   clearInterval(bagnaTimer);
   clearTimeout(bagnaTimer);
   // Salva il valore digitato anche se non confermato, altrimenti 0
   const val = document.getElementById('inp-aglio').value;
   const kg = parseFloat(val) || 0;
 
-  saveResult({
+  await saveResult({
     ...currentUser,
     type: 'bagna',
     risposta_kg: kg,
