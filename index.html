@@ -998,9 +998,9 @@ async function showLeaderboard(type) {
   // Sort
   let sorted;
   if (supaType === 'tajarin') {
-    sorted = [...results].sort((a, b) => b.score - a.score || a.seconds - b.seconds);
+    sorted = [...results].sort((a, b) => Number(b.score) - Number(a.score) || Number(a.seconds) - Number(b.seconds));
   } else {
-    sorted = [...results].sort((a, b) => a.ts - b.ts);
+    sorted = [...results].sort((a, b) => Number(b.risposta_kg) - Number(a.risposta_kg));
   }
 
   container.innerHTML = `<h3 style="margin-bottom:10px;">${supaType === 'tajarin' ? '🍝 Classifica Tajarin' : '🧄 Risposte Bagna Freida'}</h3>` +
